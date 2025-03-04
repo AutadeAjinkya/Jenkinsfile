@@ -1,5 +1,21 @@
 pipeline {
-    agent any
+    agent {
+        kubernetes {
+            yaml """
+apiVersion: v1
+kind: Pod
+metadata:
+  labels:
+    jenkins/label: jenkins-maven-agent
+spec:
+  containers:
+  - name: maven
+    image: ajinkyaautade09/jenkins-agent-maven:latest
+    command: [ "cat" ]
+    tty: true
+"""
+        }
+    }
 
     environment {
         KUBE_NAMESPACE = "gamma"
