@@ -33,19 +33,16 @@ spec:
 
         stage('Build') {
             steps {
-                sh '''
-                apt-get update && apt-get install -y maven
-                mvn clean package
-                '''
+                sh 'mvn clean package'
             }
         }
 
         stage('Docker Build & Push') {
             steps {
                 script {
-                    docker.withRegistry('https://index.docker.io/v1/', DOCKER_CREDENTIALS_ID) {
-                        sh "docker build -t $IMAGE_NAME:$IMAGE_TAG ."
-                        sh "docker push $IMAGE_NAME:$IMAGE_TAG"
+                    docker.withRegistry('https://index.docker.io/v1/', 'docker-hub') {
+                        sh "docker build -t ajinkyaautade09/my-java-app:latest ."
+                        sh "docker push ajinkyaautade09/my-java-app:latest"
                     }
                 }
             }
@@ -54,9 +51,9 @@ spec:
         stage('Deploy to Kubernetes') {
             steps {
                 sh """
-                kubectl create namespace $KUBE_NAMESPACE || true
-                helm upgrade --install my-java-app ./my-java-app-chart -n $KUBE_NAMESPACE \
-                  --set image.repository=$IMAGE_NAME --set image.tag=$IMAGE_TAG
+                kubectl create namespace gamma || true
+                helm upgrade --install my-java-app ./my-java-app-chart -n gamma \
+                  --set image.repository=ajinkyaautade09/my-java-app --set image.tag=latest
                 """
             }
         }
